@@ -634,7 +634,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "render"
+name = "render-cli"
 version = "0.1.0"
 dependencies = [
  "clap",

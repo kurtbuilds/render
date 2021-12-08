@@ -168,7 +168,7 @@ impl<'a> Iterator for EnvIter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         println!("line {} of {}", self.i, self.env.lines.len());
         while self.i < self.env.lines.len() {
-            let mut x = unsafe { self.env.lines.get_unchecked(self.i) };
+            let x = unsafe { self.env.lines.get_unchecked(self.i) };
             self.i += 1;
             match x {
                 Line::Blank => {}

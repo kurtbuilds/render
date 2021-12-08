@@ -1,9 +1,13 @@
 [package]
-name = "render"
-description = "Push environment variables to render.com"
+name = "render-cli"
+authors = ["Kurt Wolf <kurtwolfbuilds@gmail.com>"]
+description = "Command line actions for Render.com"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "render"
+path = "src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
