@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+
 use clap::Parser;
 use crate::envfile::EnvFile;
 
@@ -42,8 +42,8 @@ impl RunnableSubCommand<CommandArgs> for PutEnv {
     fn run(&self, parent_args: &CommandArgs) -> Result<(), Error> {
         let token = parent_args.token.as_ref().unwrap();
         let env = EnvFile::read(&self.file);
-        let mut pairs = Vec::new();
-        let env_vars = &env.into_iter().map(|(k, v)| {
+        let pairs = Vec::new();
+        let _env_vars = &env.into_iter().map(|(k, v)| {
             EnvVar {
                 key: k.to_string(),
                 value: v.to_string(),
