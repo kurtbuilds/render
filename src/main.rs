@@ -13,7 +13,7 @@ mod api;
 #[derive(Parser)]
 #[clap(about, version, author)] // Pull these from `Cargo.toml`
 struct CommandArgs {
-    #[clap(required = false, about = "The API key. Can be set with env var RENDER_TOKEN.")]
+    #[clap(about = "The API key. Can be set with env var RENDER_TOKEN.", long = "token")]
     token: String,
     #[clap(subcommand)]
     subcommand: Subcommand,
