@@ -42,8 +42,7 @@ impl RunnableSubCommand<CommandArgs> for PutEnv {
     fn run(&self, parent_args: &CommandArgs) -> Result<(), Error> {
         let token = parent_args.token.as_ref().unwrap();
         let env = EnvFile::read(&self.file);
-        let pairs = Vec::new();
-        let _env_vars = &env.into_iter().map(|(k, v)| {
+        let env_vars: Vec<EnvVar> = env.into_iter().map(|(k, v)| {
             EnvVar {
                 key: k.to_string(),
                 value: v.to_string(),
@@ -54,9 +53,9 @@ impl RunnableSubCommand<CommandArgs> for PutEnv {
         let services = api::list_services(token)?;
         let service = services.iter().find(|s| s.name == self.service).unwrap();
 
-        api::update_env_vars(token, &service.id, &pairs)
-            .map(|env_vars| {
-                println!("{:?}", env_vars)
+        api::update_env_vars(token, &service.id, &env_vars)
+            .map(|_env_vars| {
+                println!("Updated environment variables.")
             })
             .map_err(|e| {
                 eprintln!("Failed to create request: {}", e);

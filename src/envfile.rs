@@ -15,7 +15,6 @@ pub struct EnvFile {
 
 impl EnvFile {
     pub fn read<T: AsRef<Path>>(path: T) -> Self {
-        eprintln!("Reading envfile: {}", path.as_ref().display());
         let s = fs::read_to_string(&path).unwrap();
         EnvFile {
             lines: s.split('\n')
@@ -161,7 +160,6 @@ impl<'a> Iterator for EnvIter<'a> {
     type Item = (&'a String, &'a String);
 
     fn next(&mut self) -> Option<Self::Item> {
-        println!("line {} of {}", self.i, self.env.lines.len());
         while self.i < self.env.lines.len() {
             let x = unsafe { self.env.lines.get_unchecked(self.i) };
             self.i += 1;
