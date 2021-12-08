@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use clap::Parser;
 use crate::envfile::EnvFile;
-use serde_json;
+
 use std::env;
 use reqwest::Error;
-use serde::{Serialize, Deserialize};
-use crate::api::update_env_vars;
+use crate::api::EnvVar;
+
 
 mod envfile;
 mod api;
@@ -14,7 +14,7 @@ mod api;
 #[clap(about, version, author)] // Pull these from `Cargo.toml`
 struct CommandArgs {
     #[clap(about = "The API key. Can be set with env var RENDER_TOKEN.", long = "token")]
-    token: String,
+    token: Option<String>,
     #[clap(subcommand)]
     subcommand: Subcommand,
 }
@@ -40,22 +40,23 @@ trait RunnableSubCommand<ParentArgs> {
 
 impl RunnableSubCommand<CommandArgs> for PutEnv {
     fn run(&self, parent_args: &CommandArgs) -> Result<(), Error> {
-        let token = &parent_args.token;
+        let token = parent_args.token.as_ref().unwrap();
         let env = EnvFile::read(&self.file);
         let mut pairs = Vec::new();
-        for (k, v) in &env {
-            pairs.push([
-                ("key".to_string(), k.to_string()),
-                ("value".to_string(), v.to_string()),
-            ].into_iter().collect::<HashMap<_, _>>());
-        }
+        let env_vars = &env.into_iter().map(|(k, v)| {
+            EnvVar {
+                key: k.to_string(),
+                value: v.to_string(),
+            }
+        })
+            .collect::<Vec<EnvVar>>();
 
-        let services = api::list_services(&token);
-        let service = services.iter().filter(|s| s.name == self.service).next().unwrap();
+        let services = api::list_services(token)?;
+        let service = services.iter().find(|s| s.name == self.service).unwrap();
 
         api::update_env_vars(token, &service.id, &pairs)
-            .map(|mut res| {
-                println!("{}", res.text().unwrap());
+            .map(|env_vars| {
+                println!("{:?}", env_vars)
             })
             .map_err(|e| {
                 eprintln!("Failed to create request: {}", e);
@@ -67,8 +68,8 @@ impl RunnableSubCommand<CommandArgs> for PutEnv {
 
 fn main() {
     let mut args = CommandArgs::parse();
-    if args.token.is_empty() {
-        args.token = env::var("RENDER_TOKEN").unwrap();
+    if args.token.is_none() {
+        args.token = Some(env::var("RENDER_TOKEN").unwrap());
     }
 
     match args.subcommand {

@@ -17,13 +17,28 @@ pub struct Service {
 
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ServiceWrapper {
+pub struct ServiceCursor {
     pub service: Service,
     cursor: String,
 }
 
 
-pub fn list_services(token: &str) -> Vec<Service> {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EnvVar {
+    pub key: String,
+    pub value: String,
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EnvVarCursor {
+    #[serde(rename = "envVar")]
+    pub env_var: EnvVar,
+    cursor: String,
+}
+
+
+pub fn list_services(token: &str) -> Result<Vec<Service>, Error> {
     let url = "https://api.render.com/v1/services";
     reqwest::blocking::Client::new()
         .get(url)
@@ -31,16 +46,17 @@ pub fn list_services(token: &str) -> Vec<Service> {
         .header("Content-Type", "application/json")
         .bearer_auth(token)
         .send()
-        .map(|mut res| {
-            let text = res.text().unwrap();
-            let data: Vec<ServiceWrapper> = serde_json::from_str(&text).unwrap();
-            data.into_iter().map(|wrapper| wrapper.service).collect::<_>()
+        .map(|res| {
+            res.json::<Vec<ServiceCursor>>()
+                .unwrap()
+                .into_iter()
+                .map(|wrapper| wrapper.service)
+                .collect::<_>()
         })
-        .unwrap()
 }
 
 
-pub fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<HashMap<String, String>>) -> Result<reqwest::blocking::Response, Error> {
+pub fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<EnvVar>) -> Result<Vec<EnvVar>, Error> {
     let url = format!("https://api.render.com/v1/services/{}/env-vars", service_id);
     reqwest::blocking::Client::new()
         .put(url)
@@ -49,4 +65,11 @@ pub fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<HashMap<String
         .body(serde_json::to_string(&pairs).unwrap())
         .bearer_auth(token)
         .send()
+        .map(|res| {
+            res.json::<Vec<EnvVarCursor>>()
+                .unwrap()
+                .into_iter()
+                .map(|cursor| cursor.env_var)
+                .collect::<_>()
+        })
 }

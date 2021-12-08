@@ -1,12 +1,6 @@
 use std::{fs, io};
 use std::path::{Path, PathBuf};
 
-#[derive(Clone, Debug)]
-pub struct Pair {
-    pub(crate) key: String,
-    pub(crate) value: String,
-}
-
 pub enum Line {
     Blank,
     Pair(String, String),
@@ -21,18 +15,18 @@ pub struct EnvFile {
 
 impl EnvFile {
     pub fn read<T: AsRef<Path>>(path: T) -> Self {
+        eprintln!("Reading envfile: {}", path.as_ref().display());
         let s = fs::read_to_string(&path).unwrap();
-        // println!("DEBUG: {}", path.display());
         EnvFile {
-            lines: s.split("\n")
+            lines: s.split('\n')
                 .map(|line| {
                     let line = line.trim();
-                    if line.starts_with("#") {
+                    if line.starts_with('#') {
                         Line::Comment(line.into())
                     } else if line.is_empty() {
                         Line::Blank
                     } else {
-                        let mut split = line.splitn(2, "=");
+                        let mut split = line.splitn(2, '=');
                         let pair = (split.next().unwrap().into(), split.next().unwrap().into());
                         // println!("DEBUG: {}={}", pair.0, pair.1);
                         Line::Pair(pair.0, pair.1)
@@ -129,9 +123,9 @@ impl EnvFile {
             .map(|line| match line {
                 Line::Blank => Line::Blank,
                 Line::Pair(key, _) => {
-                    let value = self.lookup(&key);
+                    let value = self.lookup(key);
                     if value.is_none() {
-                        eprintln!("{}: Added {}={}", self.path.display(), key, "");
+                        eprintln!("{}: Added {}=", self.path.display(), key);
                     }
                     Line::Pair(key.to_string(), value.unwrap_or("".to_string()))
                 }
@@ -154,6 +148,7 @@ impl<'a> IntoIterator for &'a EnvFile {
         }
     }
 }
+
 
 
 pub struct EnvIter<'a> {
