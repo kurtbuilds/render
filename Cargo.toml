@@ -2,6 +2,7 @@
 name = "render-cli"
 authors = ["Kurt Wolf <kurtwolfbuilds@gmail.com>"]
 description = "Command line actions for Render.com"
+license = "MIT"
 version = "0.1.1"
 edition = "2021"
 
