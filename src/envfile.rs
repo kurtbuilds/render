@@ -133,8 +133,14 @@ impl EnvFile {
             .collect();
         self.lines = newlines;
     }
-}
 
+    pub fn iter(&self) -> EnvIter {
+        EnvIter {
+            env: self,
+            i: 0
+        }
+    }
+}
 
 impl<'a> IntoIterator for &'a EnvFile {
     type Item = (&'a String, &'a String);
@@ -147,7 +153,6 @@ impl<'a> IntoIterator for &'a EnvFile {
         }
     }
 }
-
 
 
 pub struct EnvIter<'a> {

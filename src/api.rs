@@ -1,6 +1,30 @@
-
+use std::any;
+use std::collections::HashMap;
+use std::fmt::Display;
 use reqwest::Error;
 use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum ServiceType {
+    #[serde(alias = "background_worker")]
+    Worker,
+    #[serde(alias = "web_service")]
+    Web,
+    #[serde(alias = "static_site")]
+    Static,
+    Unrecognized(String),
+}
+
+impl Display for ServiceType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ServiceType::Worker => write!(f, "worker"),
+            ServiceType::Web => write!(f, "web"),
+            ServiceType::Static => write!(f, "static"),
+            ServiceType::Unrecognized(s) => write!(f, "{}", s),
+        }
+    }
+}
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -10,7 +34,7 @@ pub struct Service {
     pub auto_deploy: String,
     pub branch: String,
     #[serde(rename = "type")]
-    pub typ: String,
+    pub typ: ServiceType,
     pub name: String,
     pub slug: String,
 }
@@ -38,38 +62,78 @@ pub struct EnvVarCursor {
 }
 
 
-pub fn list_services(token: &str) -> Result<Vec<Service>, Error> {
+pub fn list_services(token: &str) -> Result<Vec<Service>, anyhow::Error> {
     let url = "https://api.render.com/v1/services";
-    reqwest::blocking::Client::new()
+    let res = reqwest::blocking::Client::new()
         .get(url)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .bearer_auth(token)
-        .send()
-        .map(|res| {
-            res.json::<Vec<ServiceCursor>>()
-                .unwrap()
-                .into_iter()
-                .map(|wrapper| wrapper.service)
-                .collect::<_>()
-        })
+        .send()?;
+    match res.error_for_status_ref() {
+        Ok(_) => Ok(res.json::<Vec<ServiceCursor>>()?
+            .into_iter()
+            .map(|cur| cur.service)
+            .collect::<_>()),
+        Err(_) => Err(anyhow::anyhow!("{}", res.text().unwrap()))
+    }
 }
 
 
-pub fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<EnvVar>) -> Result<Vec<EnvVar>, Error> {
+pub fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<EnvVar>) -> Result<Vec<EnvVar>, anyhow::Error> {
     let url = format!("https://api.render.com/v1/services/{}/env-vars", service_id);
-    reqwest::blocking::Client::new()
+    let res = reqwest::blocking::Client::new()
         .put(url)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body(serde_json::to_string(&pairs).unwrap())
+        .json(&pairs)
         .bearer_auth(token)
-        .send()
-        .map(|res| {
-            res.json::<Vec<EnvVarCursor>>()
-                .unwrap()
-                .into_iter()
-                .map(|cursor| cursor.env_var)
-                .collect::<_>()
-        })
+        .send()?;
+    match res.error_for_status_ref() {
+        Ok(_) => Ok(res.json::<Vec<EnvVarCursor>>()?
+            .into_iter()
+            .map(|wrapper| wrapper.env_var)
+            .collect::<_>()),
+        Err(_) => Err(anyhow::anyhow!("{}", res.text().unwrap()))
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Commit {
+    pub id: String,
+    pub message: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Deploy {
+    pub id: String,
+    pub commit: Commit,
+    pub status: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    #[serde(rename = "updatedAt")]
+    pub updated_at: String,
+    #[serde(rename = "finishedAt")]
+    pub finished_at: Option<String>,
+}
+
+
+pub fn trigger_deploy(token: &str, service_id: &str) -> Result<Deploy, anyhow::Error> {
+    let url = format!("https://api.render.com/v1/services/{}/deploys", service_id);
+    let body_params = HashMap::from([
+        ("clearCache", "do_not_clear"),
+    ]);
+    let res = reqwest::blocking::Client::new()
+        .post(url)
+        .header("Accept", "application/json")
+        .header("Content-Type", "application/json")
+        .bearer_auth(token)
+        .json(&body_params)
+        .send()?;
+    match res.error_for_status_ref() {
+        Ok(_) => Ok(res.json::<Deploy>()?),
+        Err(_) => Err(anyhow::anyhow!("{}: {}", res.status(), res.text().unwrap())),
+    }
 }
