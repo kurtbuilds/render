@@ -21,8 +21,8 @@
 
 # Render
 
-This tool sends API actions to Render.com from the command line. Right now it only supports triggering deploys (useful for monorepos) and
-updating the environment.
+This is a CLI tool for Render.com actions. Right now it only supports triggering deploys (useful for monorepos) and
+updating a service environment environment.
 
 Pull Requests and formal adoption by the render.com team are more than welcome and will be responded to fairly quickly.
 
@@ -76,17 +76,9 @@ Alternatively, install from source:
     cd render
     just install
 
-# Roadmap
-
-There isn't one! Here's where the project is at:
-
-- [x] Update the environment for a Render service.
-- [x] Trigger a deployment for a Render service.
-- [ ] The rest of the API 😊
-
-Bug reports are very welcome, as are pull requests for new features. Feature requests will likely be ignored, as I built this tool for my own use, and I'm not aiming to support an open source tool on Render.com's behalf.
-
 # Contributing
+
+Bug reports are very welcome, as are pull requests for new features. Requests for new features will likely be ignored.
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
