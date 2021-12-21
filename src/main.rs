@@ -34,6 +34,7 @@ enum Subcommand {
 #[derive(Parser)]
 struct PutEnv {
     service: String,
+    #[clap(use_delimiter = true)]
     env_files: Vec<String>,
 }
 
