@@ -21,9 +21,10 @@
 
 # Render
 
-This is not-even-alpha quality software. I'm implementing parts of the API on an as-needed basis for my own use.
-Pull Requests and formal adoption by the render.com team are more than welcome and will be responded to 
-fairly quickly.
+This tool sends API actions to Render.com from the command line. Right now it only supports triggering deploys (useful for monorepos) and
+updating the environment.
+
+Pull Requests and formal adoption by the render.com team are more than welcome and will be responded to fairly quickly.
 
 # Usage
 
@@ -81,11 +82,9 @@ There isn't one! Here's where the project is at:
 
 - [x] Update the environment for a Render service.
 - [x] Trigger a deployment for a Render service.
-- [ ] Publish to crates.io
 - [ ] The rest of the API 😊
 
-Bug reports are extremely welcome, as are pull requests for new features. Feature requests will mostly be ignored, 
-because, again, I built this for my own use.
+Bug reports are very welcome, as are pull requests for new features. Feature requests will likely be ignored, as I built this tool for my own use, and I'm not aiming to support an open source tool on Render.com's behalf.
 
 # Contributing
 
