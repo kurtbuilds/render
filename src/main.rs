@@ -128,7 +128,7 @@ fn main() -> anyhow::Result<()> {
                 .required(true)
                 .help("The service name")
             )
-            .arg(clap::Arg::new("env-files")
+            .arg(clap::Arg::new("env_files")
                 .required(true)
                 .multiple_values(true)
                 .help("The env files to read")
