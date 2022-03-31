@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use reqwest::Error;
 use serde::{Serialize, Deserialize};
+use anyhow::Result;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ServiceType {
@@ -34,16 +35,22 @@ pub struct Service {
     pub auto_deploy: String,
     pub branch: String,
     #[serde(rename = "type")]
-    pub typ: ServiceType,
+    pub type_: ServiceType,
     pub name: String,
     pub slug: String,
+}
+
+impl Service {
+    pub fn url(&self) -> String {
+        format!("https://dashboard.render.com/{}/{}", self.type_, self.id)
+    }
 }
 
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ServiceCursor {
     pub service: Service,
-    cursor: String,
+    pub cursor: String,
 }
 
 
@@ -58,11 +65,16 @@ pub struct EnvVar {
 pub struct EnvVarCursor {
     #[serde(rename = "envVar")]
     pub env_var: EnvVar,
-    cursor: String,
+    pub cursor: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DeployCursor {
+    pub deploy: Deploy,
+    pub cursor: String,
+}
 
-pub fn list_services(token: &str) -> Result<Vec<Service>, anyhow::Error> {
+pub fn list_services(token: &str) -> Result<Vec<Service>> {
     let url = "https://api.render.com/v1/services";
     let res = reqwest::blocking::Client::new()
         .get(url)
@@ -80,7 +92,31 @@ pub fn list_services(token: &str) -> Result<Vec<Service>, anyhow::Error> {
 }
 
 
-pub fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<EnvVar>) -> Result<Vec<EnvVar>, anyhow::Error> {
+pub async fn list_deploys(token: &str, service_id: &str, limit: usize) -> Result<Vec<Deploy>> {
+    if !(1 <= limit && limit <= 100) {
+        return Err(anyhow::anyhow!("limit must be between 1 and 100"));
+    }
+    // println!("listing deploys for service {}", service_id);
+    let url = format!("https://api.render.com/v1/services/{}/deploys?limit={}", service_id, limit);
+    let client = httpclient::Client::new(None);
+    let res = client.get(&url)
+        .header("Accept", "application/json")
+        .header("Content-Type", "application/json")
+        .bearer_auth(token)
+        ;
+    let res = res.send()
+        .await?;
+    match res.error_for_status_ref() {
+        Ok(_) => Ok(res.json::<Vec<DeployCursor>>().await?
+            .into_iter()
+            .map(|cur| cur.deploy)
+            .collect::<_>()),
+        Err(_) => Err(anyhow::anyhow!("{}", res.text().await.unwrap()))
+    }
+}
+
+
+pub fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<EnvVar>) -> Result<Vec<EnvVar>> {
     let url = format!("https://api.render.com/v1/services/{}/env-vars", service_id);
     let res = reqwest::blocking::Client::new()
         .put(url)
