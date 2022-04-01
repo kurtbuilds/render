@@ -74,7 +74,8 @@ jobs:
       run: |
         compgen -c | grep gcc
         cargo test --all --target ${{ matrix.target }}
-
+      env:
+        CC_x86_64-unknown-linux-musl: x86_64-linux-gnu-gcc
     - name: Package
       id: package
       env:
