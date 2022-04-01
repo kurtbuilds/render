@@ -52,7 +52,7 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         override: true
-        target:  ${{ matrix.target }} 
+        target: ${{ matrix.target }}
         toolchain: stable
 
     - uses: Swatinem/rust-cache@v1
@@ -62,13 +62,11 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-aarch64-linux-gnu
-
     - name: Install ARM7 Toolchain
       if: ${{ matrix.target == 'armv7-unknown-linux-musleabihf' }}
       run: |
         sudo apt-get update
         sudo apt-get install gcc-arm-linux-gnueabihf
-
     - name: Test
       if: matrix.native
       run: cargo test --all --target ${{ matrix.target }}
