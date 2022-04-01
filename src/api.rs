@@ -1,7 +1,6 @@
 use std::any;
 use std::collections::HashMap;
 use std::fmt::Display;
-use reqwest::Error;
 use serde::{Serialize, Deserialize};
 use anyhow::Result;
 
@@ -74,20 +73,21 @@ pub struct DeployCursor {
     pub cursor: String,
 }
 
-pub fn list_services(token: &str) -> Result<Vec<Service>> {
+pub async fn list_services(token: &str) -> Result<Vec<Service>> {
     let url = "https://api.render.com/v1/services";
-    let res = reqwest::blocking::Client::new()
+    let res = httpclient::Client::new(None)
         .get(url)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .bearer_auth(token)
-        .send()?;
+        .send()
+        .await?;
     match res.error_for_status_ref() {
-        Ok(_) => Ok(res.json::<Vec<ServiceCursor>>()?
+        Ok(_) => Ok(res.json::<Vec<ServiceCursor>>().await?
             .into_iter()
             .map(|cur| cur.service)
             .collect::<_>()),
-        Err(_) => Err(anyhow::anyhow!("{}", res.text().unwrap()))
+        Err(_) => Err(anyhow::anyhow!("{}", res.text().await.unwrap()))
     }
 }
 
@@ -116,21 +116,21 @@ pub async fn list_deploys(token: &str, service_id: &str, limit: usize) -> Result
 }
 
 
-pub fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<EnvVar>) -> Result<Vec<EnvVar>> {
+pub async fn update_env_vars(token: &str, service_id: &str, pairs: &Vec<EnvVar>) -> Result<Vec<EnvVar>> {
     let url = format!("https://api.render.com/v1/services/{}/env-vars", service_id);
-    let res = reqwest::blocking::Client::new()
-        .put(url)
+    let res = httpclient::Client::new(None)
+        .request(http::Method::PUT, &url)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .json(&pairs)
         .bearer_auth(token)
-        .send()?;
+        .send().await?;
     match res.error_for_status_ref() {
-        Ok(_) => Ok(res.json::<Vec<EnvVarCursor>>()?
+        Ok(_) => Ok(res.json::<Vec<EnvVarCursor>>().await?
             .into_iter()
             .map(|wrapper| wrapper.env_var)
             .collect::<_>()),
-        Err(_) => Err(anyhow::anyhow!("{}", res.text().unwrap()))
+        Err(_) => Err(anyhow::anyhow!("{}", res.text().await.unwrap()))
     }
 }
 
@@ -156,20 +156,20 @@ pub struct Deploy {
 }
 
 
-pub fn trigger_deploy(token: &str, service_id: &str) -> Result<Deploy, anyhow::Error> {
+pub async fn trigger_deploy(token: &str, service_id: &str) -> Result<Deploy, anyhow::Error> {
     let url = format!("https://api.render.com/v1/services/{}/deploys", service_id);
     let body_params = HashMap::from([
         ("clearCache", "do_not_clear"),
     ]);
-    let res = reqwest::blocking::Client::new()
-        .post(url)
+    let res = httpclient::Client::new(None)
+        .post(&url)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .bearer_auth(token)
         .json(&body_params)
-        .send()?;
+        .send().await?;
     match res.error_for_status_ref() {
-        Ok(_) => Ok(res.json::<Deploy>()?),
-        Err(_) => Err(anyhow::anyhow!("{}: {}", res.status(), res.text().unwrap())),
+        Ok(_) => Ok(res.json::<Deploy>().await?),
+        Err(_) => Err(anyhow::anyhow!("{}: {}", res.status(), res.text().await.unwrap())),
     }
 }
