@@ -731,7 +731,7 @@ dependencies = [
 
 [[package]]
 name = "render-cli"
-version = "0.6.10"
+version = "0.6.11"
 dependencies = [
  "anyhow",
  "clap",
