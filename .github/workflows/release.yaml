@@ -69,9 +69,11 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-arm-linux-gnueabihf
-    - name: Test
+    - name: Run tests before building package
       if: matrix.native
-      run: cargo test --all --target ${{ matrix.target }}
+      run: |
+        compgen -c | grep gcc
+        cargo test --all --target ${{ matrix.target }}
 
     - name: Package
       id: package
