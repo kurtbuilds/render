@@ -14,6 +14,7 @@ test -f Cargo.lock || cargo generate-lockfile
 
 echo "Building $BIN..."
 RUSTFLAGS="--deny warnings --codegen target-feature=+crt-static $TARGET_RUSTFLAGS" \
+  CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc \
   cargo build --bin $BIN --target $TARGET --release
 EXECUTABLE=target/$TARGET/release/$BIN
 
@@ -39,7 +40,7 @@ case $OS in
     tar czf $ARCHIVE *
     echo "::set-output name=archive::$ARCHIVE"
     ;;
-  windows-2016)
+  windows-latest)
     ARCHIVE=$DIST/$BIN-$VERSION-$TARGET.zip
     7z a $ARCHIVE *
     echo "::set-output name=archive::`pwd -W`/$BIN-$VERSION-$TARGET.zip"
