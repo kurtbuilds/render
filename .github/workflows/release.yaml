@@ -78,7 +78,8 @@ jobs:
           OS: ${{ matrix.os }}
           TARGET_RUSTFLAGS: ${{ matrix.target_rustflags }}
           CC_x86_64-unknown-linux-musl: x86_64-linux-gnu-gcc
-          CC_aarch64-unknown-linux-musl: aarch64-linux-gnu-gcc
+          CC_aarch64-unknown-linux-musl: x86_64-linux-gnu-gcc
+          CC_armv7-unknown-linux-musleabihf: arm-linux-gnueabihf-gcc
         run: ./.github/package
         shell: bash
 
