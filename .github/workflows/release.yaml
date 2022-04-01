@@ -64,9 +64,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install gcc-arm-linux-gnueabihf
-      - name: Ref Type
-        id: ref-type
-        run: cargo run --package ref-type -- --reference ${{ github.ref }}
+
+#      - name: Ref Type
+#        id: ref-type
+#        run: cargo run --package ref-type -- --reference ${{ github.ref }}
 
       - name: Package
         id: package
@@ -84,7 +85,7 @@ jobs:
         with:
           draft: false
           files: ${{ steps.package.outputs.archive }}
-          prerelease: ${{ steps.ref-type.outputs.value != 'release' }}
+#          prerelease: ${{ steps.ref-type.outputs.value != 'release' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -98,6 +99,6 @@ jobs:
         with:
           draft: false
           files: CHANGELOG.md
-          prerelease: ${{ steps.ref-type.outputs.value != 'release' }}
+#          prerelease: ${{ steps.ref-type.outputs.value != 'release' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
