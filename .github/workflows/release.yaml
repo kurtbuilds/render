@@ -72,10 +72,11 @@ jobs:
     - name: Run tests before building package
       if: matrix.native
       run: |
-        compgen -c | grep gcc
+        env | grep PKG_CONFIG
         cargo test --all --target ${{ matrix.target }}
       env:
         CC_x86_64-unknown-linux-musl: x86_64-linux-gnu-gcc
+
     - name: Package
       id: package
       env:
