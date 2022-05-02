@@ -35,6 +35,8 @@ pub fn list_services(token: &str) -> anyhow::Result<()> {
                     "live" => Cow::Owned("LIVE".green().to_string()),
                     "build_failed" => Cow::Owned("BUILD FAILED".red().to_string()),
                     "update_failed" => Cow::Owned("UPDATE FAILED".red().to_string()),
+                    "update_in_progress" => Cow::Owned("UPDATING".yellow().to_string()),
+                    "build_in_progress" => Cow::Owned("BUILDING".yellow().to_string()),
                     s => Cow::Borrowed(s),
                 })
                 .with_cell(service.id.clone())
