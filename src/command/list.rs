@@ -1,9 +1,12 @@
 use tabular::Row;
 use std::borrow::Cow;
+use chrono::Utc;
 use slice_group_by::GroupBy;
 use colored::Colorize;
 use crate::{api, stream, StreamExt};
 use crate::command::util;
+use relativetime::RelativeTime;
+
 
 pub fn list_services(token: &str) -> anyhow::Result<()> {
     let runtime = util::runtime();
@@ -20,12 +23,12 @@ pub fn list_services(token: &str) -> anyhow::Result<()> {
 
     let mut rows = runtime.block_on(fetches);
 
-    let mut table = tabular::Table::new("{:<} {:<} {:<} {:<}");
+    let mut table = tabular::Table::new("{:<} {:<} {:<} {:<} {:<}");
     rows.sort_by(|a, b| a.0.name.cmp(&b.0.name));
     let groups = rows.linear_group_by_key(|(service, deploy)| service.name.splitn(2, '.').next().unwrap().to_string())
         .collect::<Vec<_>>();
 
-    table.add_row(tabular::row!("SERVICE", "STATUS", "SERVICE ID", "URL"));
+    table.add_row(tabular::row!("SERVICE", "STATUS", "LAST DEPLOYED", "SERVICE ID", "URL"));
     for rows in groups {
         for (service, deploy) in rows {
             let deploy = deploy.as_ref().unwrap().get(0).unwrap();
@@ -39,6 +42,7 @@ pub fn list_services(token: &str) -> anyhow::Result<()> {
                     "build_in_progress" => Cow::Owned("BUILDING".yellow().to_string()),
                     s => Cow::Borrowed(s),
                 })
+                .with_cell(deploy.updated_at.relative_time())
                 .with_cell(service.id.clone())
                 .with_cell(service.url())
             );

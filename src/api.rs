@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use serde::{Serialize, Deserialize};
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ServiceType {
@@ -150,7 +151,7 @@ pub struct Deploy {
     #[serde(rename = "createdAt")]
     pub created_at: String,
     #[serde(rename = "updatedAt")]
-    pub updated_at: String,
+    pub updated_at: DateTime<Utc>,
     #[serde(rename = "finishedAt")]
     pub finished_at: Option<String>,
 }
