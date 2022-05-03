@@ -27,10 +27,15 @@ const NAME: &str = env!("CARGO_PKG_NAME");
 
 fn main() -> anyhow::Result<()> {
     let args = clap::Command::new(NAME)
+        .version(VERSION)
+        .about("CLI for Render.com")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .arg(clap::Arg::new("token")
             .env("RENDER_TOKEN")
+            .global(true)
+            .long("token")
+            .takes_value(true)
         )
         .subcommand(clap::Command::new("put-env")
             .arg(clap::Arg::new("service")
