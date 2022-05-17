@@ -605,10 +605,11 @@ dependencies = [
 
 [[package]]
 name = "relativetime"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97f76085759662428ec4bd6da76e0eb7be55f270b9573b21035b3fc556932d72"
+checksum = "87b093e81f7b2ee8db5253e1343a98c8334bd5e7214e507e188d2450084e1c8d"
 dependencies = [
+ "chrono",
  "humantime",
 ]
 
