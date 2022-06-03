@@ -15,7 +15,7 @@ pub struct EnvFile {
 
 impl EnvFile {
     pub fn read<T: AsRef<Path>>(path: T) -> Self {
-        let s = fs::read_to_string(&path).unwrap();
+        let s = fs::read_to_string(&path).expect(&format!("Failed to read file: {} ", path.as_ref().display()));
         EnvFile {
             lines: s.split('\n')
                 .map(|line| {
