@@ -24,7 +24,7 @@ pub fn put_env(token: &str, args: &ArgMatches) -> anyhow::Result<()> {
 
     let services = runtime.block_on(api::list_services(token))?;
     let service = args.value_of("service").unwrap();
-    let service = services.iter().find(|s| s.name == service).unwrap();
+    let service = services.iter().find(|s| s.name == service).expect("Service not found. Have you created it on render.com yet?");
 
     runtime.block_on(async {
         api::update_env_vars(token, &service.id, &env_vars)
