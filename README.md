@@ -22,7 +22,7 @@
 # Render
 
 This is a CLI tool for Render.com actions. Right now it only supports triggering deploys (useful for monorepos) and
-updating a service environment environment.
+updating a service environment variables.
 
 Pull Requests and formal adoption by the render.com team are more than welcome and will be responded to fairly quickly.
 
