@@ -28,11 +28,12 @@ Pull Requests and formal adoption by the render.com team are more than welcome a
 
 # Usage
 
-These are three commands currently:
+These are the available commands
 
     render put-env <service_name> <env_fpath...>
     render deploy <service_name>
     render list
+    render suspend <service_name...>
 
 It authorizes your requests by looking for `RENDER_TOKEN` in your environment. 
 Generate a token on the Render.com web interface, and then add it to your environment.

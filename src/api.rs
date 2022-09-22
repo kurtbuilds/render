@@ -157,7 +157,7 @@ pub struct Deploy {
 }
 
 
-pub async fn trigger_deploy(token: &str, service_id: &str) -> Result<Deploy, anyhow::Error> {
+pub async fn trigger_deploy(token: &str, service_id: &str) -> Result<Deploy> {
     let url = format!("https://api.render.com/v1/services/{}/deploys", service_id);
     let body_params = HashMap::from([
         ("clearCache", "do_not_clear"),
@@ -171,6 +171,20 @@ pub async fn trigger_deploy(token: &str, service_id: &str) -> Result<Deploy, any
         .send().await?;
     match res.error_for_status_ref() {
         Ok(_) => Ok(res.json::<Deploy>().await?),
+        Err(_) => Err(anyhow::anyhow!("{}: {}", res.status(), res.text().await.unwrap())),
+    }
+}
+
+pub async fn suspend(token: &str, service_id: &str) -> Result<()> {
+    let url = format!("https://api.render.com/v1/services/{}/suspend", service_id);
+    let res = httpclient::Client::new(None)
+        .post(&url)
+        .header("Accept", "application/json")
+        .header("Content-Type", "application/json")
+        .bearer_auth(token)
+        .send().await?;
+    match res.error_for_status_ref() {
+        Ok(_) => Ok(()),
         Err(_) => Err(anyhow::anyhow!("{}: {}", res.status(), res.text().await.unwrap())),
     }
 }

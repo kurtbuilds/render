@@ -12,7 +12,6 @@ use colored::Colorize;
 use futures::{stream, StreamExt};
 use slice_group_by::GroupBy;
 use tabular::Row;
-use command::{deploy, list, put_env};
 use crate::api::{DeployCursor, EnvVar};
 
 mod envfile;
@@ -58,18 +57,28 @@ fn main() -> anyhow::Result<()> {
         .subcommand(clap::Command::new("list")
             .alias("ls")
         )
+        .subcommand(clap::Command::new("suspend")
+            .arg(clap::Arg::new("services")
+                .required(true)
+                .multiple_values(true)
+                .help("Services to suspend")
+            )
+        )
         .get_matches();
 
     let token = args.value_of("token").unwrap();
     match args.subcommand().unwrap() {
         ("put-env", args) => {
-            put_env::put_env(token, args)
+            command::put_env::put_env(token, args)
         }
         ("deploy", args) => {
-            deploy::deploy(token, args)
+            command::deploy::deploy(token, args)
         }
         ("list", args) => {
-            list::list_services(token)
+            command::list::list_services(token)
+        }
+        ("suspend", args) => {
+            command::suspend::suspend(token, args)
         }
         _ => unreachable!()
     }
