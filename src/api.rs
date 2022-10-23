@@ -29,6 +29,14 @@ impl Display for ServiceType {
 
 
 #[derive(Debug, Serialize, Deserialize)]
+pub enum Suspended {
+    #[serde(rename = "suspended")]
+    Suspended,
+    #[serde(rename = "not_suspended")]
+    NotSuspended
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Service {
     pub id: String,
     #[serde(rename = "autoDeploy")]
@@ -38,6 +46,7 @@ pub struct Service {
     pub type_: ServiceType,
     pub name: String,
     pub slug: String,
+    pub suspended: Suspended,
 }
 
 impl Service {
