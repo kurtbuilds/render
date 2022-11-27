@@ -6,6 +6,7 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", from = "String")]
 pub enum ServiceType {
     #[serde(alias = "background_worker")]
     Worker,
@@ -16,6 +17,18 @@ pub enum ServiceType {
     Unrecognized(String),
 }
 
+impl From<String> for ServiceType {
+    fn from(s: String) -> Self {
+        use ServiceType::*;
+
+        match sr() {
+            "background_worker" => Worker,
+            "web_service" => Web,
+            "static_site" => Static,
+            _ => Self::Unrecognized(s),
+        }
+    }
+}
 impl Display for ServiceType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
