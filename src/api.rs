@@ -21,14 +21,15 @@ impl From<String> for ServiceType {
     fn from(s: String) -> Self {
         use ServiceType::*;
 
-        match sr() {
+        match s.as_str() {
             "background_worker" => Worker,
             "web_service" => Web,
             "static_site" => Static,
-            _ => Self::Unrecognized(s),
+            _ => Unrecognized(s),
         }
     }
 }
+
 impl Display for ServiceType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
