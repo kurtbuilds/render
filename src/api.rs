@@ -14,6 +14,8 @@ pub enum ServiceType {
     Web,
     #[serde(alias = "static_site")]
     Static,
+    #[serde(alias = "cron_job")]
+    CronJob,
     Unrecognized(String),
 }
 
@@ -25,6 +27,7 @@ impl From<String> for ServiceType {
             "background_worker" => Worker,
             "web_service" => Web,
             "static_site" => Static,
+            "cron_job" => CronJob,
             _ => Unrecognized(s),
         }
     }
@@ -32,11 +35,13 @@ impl From<String> for ServiceType {
 
 impl Display for ServiceType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use ServiceType::*;
         match self {
-            ServiceType::Worker => write!(f, "worker"),
-            ServiceType::Web => write!(f, "web"),
-            ServiceType::Static => write!(f, "static"),
-            ServiceType::Unrecognized(s) => write!(f, "{}", s),
+            Worker => write!(f, "worker"),
+            Web => write!(f, "web"),
+            Static => write!(f, "static"),
+            CronJob => write!(f, "cron_job"),
+            Unrecognized(s) => write!(f, "{}", s),
         }
     }
 }
@@ -47,7 +52,7 @@ pub enum Suspended {
     #[serde(rename = "suspended")]
     Suspended,
     #[serde(rename = "not_suspended")]
-    NotSuspended
+    NotSuspended,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
