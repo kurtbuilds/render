@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/github/stars/kurtbuilds/render.svg?style=flat-square" alt="Stars" />
 </a>
 <a href="https://github.com/kurtbuilds/render/actions">
-    <img src="https://img.shields.io/github/workflow/status/kurtbuilds/render/test?style=flat-square" alt="Build Status" />
+    <img src="https://img.shields.io/github/actions/workflow/status/kurtbuilds/render/test.yaml?style=flat-square" alt="Build Status" />
 </a>
 <a href="https://crates.io/crates/render-cli">
     <img src="https://img.shields.io/crates/d/render-cli?style=flat-square" alt="Downloads" />
