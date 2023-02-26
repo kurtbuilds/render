@@ -1,85 +1,71 @@
-#![allow(unused)]
+use std::{env, thread};
 use std::borrow::Cow;
 use std::collections::HashMap;
-use clap::ArgMatches;
-use crate::envfile::EnvFile;
-use futures::stream::FuturesUnordered;
 
-use std::{env, thread};
 use anyhow::anyhow;
 use anyhow::Result;
+use clap::{Args, Parser, Subcommand, ValueEnum};
 use colored::Colorize;
 use futures::{stream, StreamExt};
+use futures::stream::FuturesUnordered;
 use slice_group_by::GroupBy;
-use tabular::Row;
-use crate::api::{DeployCursor, EnvVar};
+
+use command::*;
+
+use crate::envfile::EnvFile;
 
 mod envfile;
 mod api;
 mod command;
 
-type ResultVec<A, B> = Result<Vec<A>, B>;
+
+#[derive(Parser)]
+#[command(author, version, about)]
+struct Cli {
+    #[clap(subcommand)]
+    command: Command,
+
+    #[clap(short, long)]
+    verbose: bool,
+
+    #[clap(long, global = true, env = "RENDER_TOKEN")]
+    token: String,
+
+    /// Specify the owner. Can be an id (e.g. usr_<id> or tea_<id>)
+    /// or a lowercase prefix of a team (e.g. `blazing` would match the team `Blazing Fast Startup`)
+    #[clap(long, global = true, env = "RENDER_OWNER")]
+    owner: Option<String>,
+}
+
+#[derive(Subcommand, Debug)]
+enum Command {
+    /// List services
+    #[clap(alias = "ls")]
+    List(List),
+    /// Set environment variables for a service or group
+    PutEnv(PutEnv),
+    /// Deploy a service
+    Deploy(Deploy),
+    /// Suspend a service
+    Suspend(Suspend),
+    /// List env groups
+    ListEnvGroups(ListEnvGroups),
+    /// Get variables for an env group
+    GetEnvGroup(GetEnvGroup),
+    /// Create an env group
+    CreateEnvGroup(CreateEnvGroup),
+}
 
 
-const VERSION: &str = env!("CARGO_PKG_VERSION");
-const NAME: &str = env!("CARGO_PKG_NAME");
-
-fn main() -> anyhow::Result<()> {
-    let args = clap::Command::new(NAME)
-        .version(VERSION)
-        .about("CLI for Render.com")
-        .subcommand_required(true)
-        .arg_required_else_help(true)
-        .arg(clap::Arg::new("token")
-            .env("RENDER_TOKEN")
-            .global(true)
-            .long("token")
-            .takes_value(true)
-        )
-        .subcommand(clap::Command::new("put-env")
-            .arg(clap::Arg::new("service")
-                .required(true)
-                .help("The service name")
-            )
-            .arg(clap::Arg::new("env_files")
-                .required(true)
-                .multiple_values(true)
-                .help("The env files to read")
-            )
-        )
-        .subcommand(clap::Command::new("deploy")
-            .arg(clap::Arg::new("service")
-                .required(true)
-                .takes_value(true)
-                .help("The service name")
-            )
-        )
-        .subcommand(clap::Command::new("list")
-            .alias("ls")
-        )
-        .subcommand(clap::Command::new("suspend")
-            .arg(clap::Arg::new("services")
-                .required(true)
-                .multiple_values(true)
-                .help("Services to suspend")
-            )
-        )
-        .get_matches();
-
-    let token = args.value_of("token").unwrap();
-    match args.subcommand().unwrap() {
-        ("put-env", args) => {
-            command::put_env::put_env(token, args)
-        }
-        ("deploy", args) => {
-            command::deploy::deploy(token, args)
-        }
-        ("list", args) => {
-            command::list::list_services(token)
-        }
-        ("suspend", args) => {
-            command::suspend::suspend(token, args)
-        }
-        _ => unreachable!()
+fn main() -> Result<()> {
+    let args = Cli::parse();
+    match args.command {
+        Command::List(l) => l.run(&args),
+        Command::PutEnv(p) => p.run(&args),
+        Command::Deploy(d) => d.run(&args),
+        Command::Suspend(s) => s.run(&args),
+        Command::ListEnvGroups(l) => l.run(&args),
+        Command::GetEnvGroup(g) => g.run(&args),
+        Command::CreateEnvGroup(c) => c.run(&args),
     }
 }

@@ -1,19 +1,20 @@
-use clap::ArgMatches;
-use crate::api;
+use anyhow::Result;
+use crate::{api, Cli};
 use crate::command::util;
 
-pub fn deploy(token: &str, args: &ArgMatches) -> anyhow::Result<()> {
-    let runtime = util::runtime();
+#[derive(Parser, Debug)]
+pub struct Deploy {
+    service: String,
+}
 
-    let services = runtime.block_on(api::list_services(token))?;
-    let service = args.value_of("service").unwrap();
-    let service = services.iter().find(|s| s.name == service).unwrap();
-
-    runtime.block_on(async {
-        api::trigger_deploy(token, &service.id)
-            .await
-            .map(|deploy| {
-                println!("Watch deploy at https://dashboard.render.com/{}/{}/deploys/{}", service.type_, service.id, deploy.id)
-            })
-    })
+impl Deploy {
+    pub fn run(&self, args: &Cli) -> Result<()> {
+        let runtime = util::runtime();
+        let client = render_api::RenderClient::new("https://api.render.com/v1", render_api::Authentication::Token(args.token.clone()));
+        let services = runtime.block_on(client.list_services().send())?;
+        let service = services.iter().find(|s| s.service.name == self.service).expect("No service matching that name found.");
+        let deploy = runtime.block_on(client.trigger_deploy(&service.service.id).send())?;
+        println!("Watch deploy at https://dashboard.render.com/{}/{}/deploys/{}", service.service.type_, service.service.id, deploy.id);
+        Ok(())
+    }
 }

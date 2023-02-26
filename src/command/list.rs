@@ -1,11 +1,11 @@
 use tabular::Row;
 use std::borrow::Cow;
 use chrono::Utc;
-use slice_group_by::GroupBy;
 use colored::Colorize;
-use crate::{api, stream, StreamExt};
+use crate::{api, Cli, stream, StreamExt};
 use crate::command::util;
 use relativetime::RelativeTime;
+use clap_derive::parser as Parser;
 use crate::api::{Deploy, Service};
 
 pub fn service_status<'a>(service: &'a Service, deploy: &'a Deploy) -> Cow<'a, str> {
@@ -23,32 +23,6 @@ pub fn service_status<'a>(service: &'a Service, deploy: &'a Deploy) -> Cow<'a, s
 }
 
 pub fn list_services(token: &str) -> anyhow::Result<()> {
-    let runtime = util::runtime();
-
-    let services = runtime.block_on(api::list_services(token))?;
-
-    let client = httpclient::Client::new(None);
-    let fetches = stream::iter(services)
-        .map(|service| async {
-            let deploys = api::list_deploys(token, &service.id, 1).await;
-            (service, deploys)
-        })
-        .buffer_unordered(16).collect::<Vec<_>>();
-
-    let mut rows = runtime.block_on(fetches);
-
-    let mut table = tabular::Table::new("{:<}  {:<}  {:<}  {:<}  {:<}");
-    rows.sort_by(|a, b| a.0.name.cmp(&b.0.name));
-    let groups = rows.linear_group_by_key(|(service, deploy)| service.name.splitn(2, '.').next().unwrap().to_string())
-        .collect::<Vec<_>>();
-
-    table.add_row(Row::new()
-        .with_cell("SERVICE")
-        .with_cell("STATUS")
-        .with_cell("UPDATED")
-        .with_cell("SERVICE ID")
-        .with_cell("URL")
-    );
 
     for rows in groups {
         for (service, deploys) in rows {
@@ -61,8 +35,35 @@ pub fn list_services(token: &str) -> anyhow::Result<()> {
                 .with_cell(service.url())
             );
         }
-        table.add_heading("");
+        // table.add_heading("");
     }
     print!("{}", table);
     Ok(())
+}
+
+#[derive(Parser, Debug)]
+pub struct List {
+}
+
+impl List {
+    pub fn run(&self, args: &Cli) -> anyhow::Result<()> {
+        let runtime = util::runtime();
+        let client = render_api::RenderClient::new("https://api.render.com/v1", render_api::Authentication::Token(args.token.clone()));
+        let services = runtime.block_on(client.list_services().send())?;
+        let service_deploys = stream::iter(services)
+            .map(|service| async {
+                let deploys = client.list_deploys(&service.service.id).limit(1).await;
+                (service, deploys)
+            })
+            .buffer_unordered(16)
+            .collect::<Vec<_>>();
+        let service_deploys = runtime.block_on(service_deploys);
+        let mut table = tabular2::Table::new()
+            .header("SERVICE")
+            .header("STATUS")
+            .header("UPDATED")
+            .header("SERVICE ID")
+            .header("URL");
+        Ok(())
+    }
 }

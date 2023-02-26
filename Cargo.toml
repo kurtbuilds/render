@@ -14,14 +14,18 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0.51"
 chrono = { version = "0.4.19", features = ["serde"] }
-clap = { version = "3", features = ["derive", "env"] }
+clap = { version = "4.1.6", features = ["derive", "env"] }
 colored = "2.0.0"
 futures = "0.3.21"
 http = "0.2.6"
-httpclient = "0.1.12"
+httpclient = "0.15.0"
 relativetime = { version = "0.1.4", features = ["chrono"] }
 serde = {version = "1.0.130", features = ["derive"]}
 serde_json = "1.0.72"
 slice-group-by = "0.3.0"
-tabular = "0.2.0"
+tabular2 = "0.1.0"
 tokio = { version = "1.17.0", features = ["full"] }
+render-api = "0.1.0"
+
+[patch.crates-io]
+render-api = { path = "../render-rs" }
