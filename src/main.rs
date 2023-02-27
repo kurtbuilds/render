@@ -7,7 +7,6 @@ use command::*;
 
 mod command;
 
-
 #[derive(Parser)]
 #[command(author, version, about)]
 pub struct Cli {
@@ -45,7 +44,7 @@ impl Cli {
         RenderClient::new("https://api.render.com/v1", render_api::RenderAuthentication::ApiKeyAuth{
             api_key_auth: self.token.as_ref().expect("--token or RENDER_TOKEN must be set.").clone(),
         })
-            .with_middleware(httpclient::middleware::LoggerMiddleware::new())
+            // .with_middleware(httpclient::middleware::LoggerMiddleware::new())
     }
 }
 
@@ -64,8 +63,8 @@ enum Command {
     ListEnvGroups(ListEnvGroups),
     /// Get variables for an env group
     GetEnv(GetEnv),
-    /// Create an env group
-    CreateEnvGroup(CreateEnvGroup),
+    // /// Create an env group
+    // CreateEnvGroup(CreateEnvGroup),
     /// List user and teams
     Teams(GetTeams),
 }
@@ -80,7 +79,7 @@ fn main() -> Result<()> {
         Command::Suspend(s) => s.run(&args),
         Command::ListEnvGroups(l) => l.run(&args),
         Command::GetEnv(g) => g.run(&args),
-        Command::CreateEnvGroup(c) => c.run(&args),
+        // Command::CreateEnvGroup(c) => c.run(&args),
         Command::Teams(t) => t.run(&args),
     }
 }

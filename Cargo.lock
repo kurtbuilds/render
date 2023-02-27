@@ -252,9 +252,9 @@ dependencies = [
 
 [[package]]
 name = "env2"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c01ab90b3227e1aa8cd13085ef0db7b7e040337a00954db8d8f675c27c1df16"
+checksum = "fde68119757c3dbeaf3bc3f05a8be7be67c920d4c829a55e73916aca20e01ce2"
 
 [[package]]
 name = "errno"
@@ -812,7 +812,7 @@ dependencies = [
 
 [[package]]
 name = "render-api"
-version = "0.2.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "futures",
@@ -1078,7 +1078,7 @@ dependencies = [
 
 [[package]]
 name = "tabular2"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "strip-ansi-escapes",
  "unicode-width",
