@@ -1,27 +1,16 @@
-use std::{env, thread};
-use std::borrow::Cow;
-use std::collections::HashMap;
-
-use anyhow::anyhow;
 use anyhow::Result;
-use clap::{Args, Parser, Subcommand, ValueEnum};
-use colored::Colorize;
+use clap::{Parser, Subcommand};
 use futures::{stream, StreamExt};
-use futures::stream::FuturesUnordered;
-use slice_group_by::GroupBy;
+use render_api::RenderClient;
 
 use command::*;
 
-use crate::envfile::EnvFile;
-
-mod envfile;
-mod api;
 mod command;
 
 
 #[derive(Parser)]
 #[command(author, version, about)]
-struct Cli {
+pub struct Cli {
     #[clap(subcommand)]
     command: Command,
 
@@ -29,12 +18,35 @@ struct Cli {
     verbose: bool,
 
     #[clap(long, global = true, env = "RENDER_TOKEN")]
-    token: String,
+    token: Option<String>,
 
     /// Specify the owner. Can be an id (e.g. usr_<id> or tea_<id>)
     /// or a lowercase prefix of a team (e.g. `blazing` would match the team `Blazing Fast Startup`)
     #[clap(long, global = true, env = "RENDER_OWNER")]
     owner: Option<String>,
+}
+
+impl Cli {
+    pub async fn resolve_owner_id(&self, client: &RenderClient) -> Option<String> {
+        if let Some(owner) = &self.owner {
+            if owner.starts_with("usr-") || owner.starts_with("tea-") {
+                return Some(owner.clone());
+            }
+            let owners_and_teams = client.list_authorized_users_and_teams().await.unwrap();
+            let owner = owner.to_lowercase();
+            let owner = owners_and_teams.into_iter().find(|o| o.owner.name.to_lowercase().starts_with(&owner)).unwrap();
+            Some(owner.owner.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn build_client(&self) -> RenderClient {
+        RenderClient::new("https://api.render.com/v1", render_api::RenderAuthentication::ApiKeyAuth{
+            api_key_auth: self.token.as_ref().expect("--token or RENDER_TOKEN must be set.").clone(),
+        })
+            .with_middleware(httpclient::middleware::LoggerMiddleware::new())
+    }
 }
 
 #[derive(Subcommand, Debug)]
@@ -51,21 +63,24 @@ enum Command {
     /// List env groups
     ListEnvGroups(ListEnvGroups),
     /// Get variables for an env group
-    GetEnvGroup(GetEnvGroup),
+    GetEnv(GetEnv),
     /// Create an env group
     CreateEnvGroup(CreateEnvGroup),
+    /// List user and teams
+    Teams(GetTeams),
 }
 
 
 fn main() -> Result<()> {
     let args = Cli::parse();
-    match args.command {
+    match &args.command {
         Command::List(l) => l.run(&args),
         Command::PutEnv(p) => p.run(&args),
         Command::Deploy(d) => d.run(&args),
         Command::Suspend(s) => s.run(&args),
         Command::ListEnvGroups(l) => l.run(&args),
-        Command::GetEnvGroup(g) => g.run(&args),
+        Command::GetEnv(g) => g.run(&args),
         Command::CreateEnvGroup(c) => c.run(&args),
+        Command::Teams(t) => t.run(&args),
     }
 }

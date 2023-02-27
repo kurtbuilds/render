@@ -21,25 +21,29 @@
 
 # Render
 
-This is a CLI tool for Render.com actions. Right now it only supports triggering deploys (useful for monorepos) and
-updating a service environment variables.
+This is a CLI tool for Render.com actions. 
 
-Pull Requests and formal adoption by the render.com team are more than welcome and will be responded to fairly quickly.
+Pull requests and adoption or sponsorship by the render.com team are more than welcome.
 
 # Usage
 
-These are the available commands
+These commands exist:
 
     render put-env <service_name> <env_fpath...>
+    render put-env <env_group_name> <env_fpath...>
+    render create-env-group <service_name>
     render deploy <service_name>
     render list
     render suspend <service_name...>
 
-It authorizes your requests by looking for `RENDER_TOKEN` in your environment. 
-Generate a token on the Render.com web interface, and then add it to your environment.
+It depends on two environment variables, which can also be passed in as flags:
 
-You can add it to your environment like below. 
-I recommend against adding secrets to `~/.bash_profile`, so it's stored in `~/.renderrc`.
+    RENDER_TOKEN
+    RENDER_OWNER # this is optional. Assumes your user account otherwise
+
+For the token, generate a token on the Render.com web interface, and then add it to your environment.
+
+I recommend against adding secrets to `~/.bash_profile`. Instead, store it in `~/.renderrc`:
 
     # ~/.renderrc
     export RENDER_TOKEN=<your token>
@@ -47,48 +51,13 @@ I recommend against adding secrets to `~/.bash_profile`, so it's stored in `~/.r
     # ~/.bash_profile
     source ~/.renderrc
 
-The rest of the documentation is available from `--help`:
-
-    render-cli 0.1.0
-
-    Kurt Wolf <kurtwolfbuilds@gmail.com>
-
-    Command line actions for Render.com
-
-    USAGE:
-    render [OPTIONS] <SUBCOMMAND>
-
-    OPTIONS:
-    -h, --help             Print help information
-    --token <TOKEN>    The API key. Can be set with env var RENDER_TOKEN
-    -V, --version          Print version information
-
-    SUBCOMMANDS:
-    deploy
-    help       Print this message or the help of the given subcommand(s)
-    put-env    Update the service environment variables 
-      
 # Installation
 
     cargo install render-cli
 
-Alternatively, install from source:
+```bash
 
-    git clone https://github.com/kurtbuilds/render
-    cd render
-    just install
+curl 'https://api.render.com/graphql' \
+  -H 'authority: api.render.com'   -H 'accept: */*'   -H 'accept-language: en-US,en;q=0.9'   -H 'authorization: Bearer rnd_5k7jv9AD3Pv7-type: application/json'   -H 'cookie: __render=%7B%22originalReferrer%22%3A%22%22%2C%22id%22%3A%22usr-c16ine3jbvm8u5ep1jsg%22%7D; intercom-device-id-wf6otxqc=06392965-5eb5-4902-9df0-32081d0675ba; __cf_bm=vvkr2dtrLnvXt8MBnJ5BDRxNhxw3q84NAzH0l0xwKQU-1677468020-0-AZcjNeUyUHayPZgmZOe4Fe3ZhELo4wcexKWGoPF7SIATYO5ZW5y3C2K5H86TlqgrWrgIa4cnB1Xn3LPxvvLG2pc='   -H 'dnt: 1'   -H 'origin: https://dashboard.render.com'   -H 'referer: https://dashboard.render.com/'   -H 'render-request-id: 34ee5f8d-f5f5-423f-9341-62191d388fea'   -H 'sec-ch-ua: "Chromium";v="110", "Not A(Brand";v="24", "Google Chrome";v="110"'   -H 'sec-ch-ua-mobile: ?0'   -H 'sec-ch-ua-platform: "macOS"'   -H 'sec-fetch-dest: empty'   -H 'sec-fetch-mode: cors'   -H 'sec-fetch-site: same-site'   -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'   --data-raw $'{"operationName":"servicesForOwner","variables":{"ownerId":"tea-cckh5qmn6mpvodhffrc0"},"query":"query servicesForOwner($ownerId: String\u0021) {\\n  servicesForOwner(ownerId: $ownerId) {\\n    id\\n    type\\n    userFacingType\\n    userFacingTypeSlug\\n    name\\n    slug\\n    env {\\n      ...envFields\\n      __typename\\n    }\\n    repo {\\n      ...repoFields\\n      __typename\\n    }\\n    updatedAt\\n    createdAt\\n    lastDeployedAt\\n    state\\n    suspenders\\n    owner {\\n      id\\n      __typename\\n    }\\n    maintenanceScheduledAt\\n    pendingMaintenanceBy\\n    region {\\n      id\\n      description\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n\\nfragment envFields on Env {\\n  id\\n  name\\n  language\\n  isStatic\\n  sampleBuildCommand\\n  sampleStartCommand\\n  __typename\\n}\\n\\nfragment repoFields on Repo {\\n  id\\n  provider\\n  providerId\\n  name\\n  ownerName\\n  webURL\\n  isPrivate\\n  __typename\\n}\\n"}'   --compressed
 
-# Contributing
-
-Bug reports are very welcome, as are pull requests for new features. Requests for new features will likely be ignored.
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```

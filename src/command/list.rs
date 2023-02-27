@@ -1,15 +1,13 @@
-use tabular::Row;
 use std::borrow::Cow;
-use chrono::Utc;
 use colored::Colorize;
-use crate::{api, Cli, stream, StreamExt};
-use crate::command::util;
+use render_api::model::{Deploy, Service};
+use tabular2::Row;
+use crate::{Cli, stream, StreamExt};
 use relativetime::RelativeTime;
-use clap_derive::parser as Parser;
-use crate::api::{Deploy, Service};
+use crate::command::util::runtime;
 
 pub fn service_status<'a>(service: &'a Service, deploy: &'a Deploy) -> Cow<'a, str> {
-    if matches!(service.suspended, api::Suspended::Suspended) {
+    if service.suspended == "suspended" {
         return "SUSPENDED".dimmed().to_string().into();
     }
     match deploy.status.as_ref() {
@@ -18,42 +16,48 @@ pub fn service_status<'a>(service: &'a Service, deploy: &'a Deploy) -> Cow<'a, s
         "update_failed" => Cow::Owned("UPDATE FAILED".red().to_string()),
         "update_in_progress" => Cow::Owned("UPDATING".yellow().to_string()),
         "build_in_progress" => Cow::Owned("BUILDING".yellow().to_string()),
+        "deactivated" => Cow::Owned("DEACTIVATED".dimmed().to_string()),
+        "canceled" => Cow::Owned("CANCELED".dimmed().to_string()),
         s => Cow::Borrowed(s),
     }
 }
 
-pub fn list_services(token: &str) -> anyhow::Result<()> {
-
-    for rows in groups {
-        for (service, deploys) in rows {
-            let deploy = deploys.as_ref().unwrap().get(0).unwrap();
-            table.add_row(Row::new()
-                .with_cell(service.name.clone())
-                .with_cell(service_status(service, deploy))
-                .with_cell(deploy.updated_at.to_relative())
-                .with_cell(service.id.clone())
-                .with_cell(service.url())
-            );
-        }
-        // table.add_heading("");
-    }
-    print!("{}", table);
-    Ok(())
+pub fn url(service: &Service) -> String {
+    let code = match service.type_.as_str() {
+        "static_site" => "static",
+        "web_service" => "web",
+        "background_worker" => "worker",
+        "cron_job" => "cron",
+        z => z,
+    };
+    format!("https://dashboard.render.com/{}/{}", code, service.id)
 }
 
-#[derive(Parser, Debug)]
+#[derive(clap::Parser, Debug)]
 pub struct List {
 }
 
 impl List {
-    pub fn run(&self, args: &Cli) -> anyhow::Result<()> {
-        let runtime = util::runtime();
-        let client = render_api::RenderClient::new("https://api.render.com/v1", render_api::Authentication::Token(args.token.clone()));
-        let services = runtime.block_on(client.list_services().send())?;
+    pub fn run(&self, cli: &Cli) -> anyhow::Result<()> {
+        let runtime = runtime();
+        let client = cli.build_client();
+        let mut list_services = client.list_services();
+        let owner_id  = runtime.block_on(cli.resolve_owner_id(&client));
+        if let Some(owner_id) = &owner_id {
+            list_services = list_services.owner_id(owner_id);
+        }
+        let mut services = runtime.block_on(list_services.send())?;
+        match owner_id.as_ref() {
+            Some(z) if z.starts_with("tea-") => {
+                services = services.into_iter().filter(|s| s.service.owner_id == *z).collect::<Vec<_>>();
+            }
+            _ => {}
+        }
         let service_deploys = stream::iter(services)
             .map(|service| async {
-                let deploys = client.list_deploys(&service.service.id).limit(1).await;
-                (service, deploys)
+                let mut deploys = client.list_deploys(&service.service.id).limit(1).await.unwrap();
+                let deploy = deploys.remove(0).deploy;
+                (service.service, deploy)
             })
             .buffer_unordered(16)
             .collect::<Vec<_>>();
@@ -63,7 +67,18 @@ impl List {
             .header("STATUS")
             .header("UPDATED")
             .header("SERVICE ID")
-            .header("URL");
+            .header("URL")
+            .end_header();
+        for (service, deploy) in service_deploys.iter() {
+            table = table.row(Row::new()
+                .cell(&service.name)
+                .cell(&service_status(service, deploy))
+                .cell(&deploy.updated_at.to_relative())
+                .cell(&service.id)
+                .cell(&url(service))
+            );
+        }
+        print!("{}", table);
         Ok(())
     }
 }
