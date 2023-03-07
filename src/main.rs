@@ -6,6 +6,7 @@ use render_api::RenderClient;
 use command::*;
 
 mod command;
+mod ext;
 
 #[derive(Parser)]
 #[command(author, version, about)]

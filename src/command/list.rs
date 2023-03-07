@@ -5,6 +5,7 @@ use tabular2::Row;
 use crate::{Cli, stream, StreamExt};
 use relativetime::RelativeTime;
 use crate::command::util::runtime;
+use crate::ext::ServiceCursorExt;
 
 pub fn service_status<'a>(service: &'a Service, deploy: &'a Deploy) -> Cow<'a, str> {
     if service.suspended == "suspended" {
@@ -22,20 +23,8 @@ pub fn service_status<'a>(service: &'a Service, deploy: &'a Deploy) -> Cow<'a, s
     }
 }
 
-pub fn url(service: &Service) -> String {
-    let code = match service.type_.as_str() {
-        "static_site" => "static",
-        "web_service" => "web",
-        "background_worker" => "worker",
-        "cron_job" => "cron",
-        z => z,
-    };
-    format!("https://dashboard.render.com/{}/{}", code, service.id)
-}
-
 #[derive(clap::Parser, Debug)]
-pub struct List {
-}
+pub struct List {}
 
 impl List {
     pub fn run(&self, cli: &Cli) -> anyhow::Result<()> {
@@ -75,7 +64,7 @@ impl List {
                 .cell(&service_status(service, deploy))
                 .cell(&deploy.updated_at.to_relative())
                 .cell(&service.id)
-                .cell(&url(service))
+                .cell(&service.service_url())
             );
         }
         print!("{}", table);
