@@ -813,6 +813,8 @@ dependencies = [
 [[package]]
 name = "render-api"
 version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c3863e7f0a1fb9c380e780615860b6f9117fc6ad379995e1cafd33457862d47"
 dependencies = [
  "chrono",
  "futures",
@@ -1079,6 +1081,8 @@ dependencies = [
 [[package]]
 name = "tabular2"
 version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "237262b49b3c2daf538376bebf3485a0cb723525228295cfcf5ca91809220c9f"
 dependencies = [
  "strip-ansi-escapes",
  "unicode-width",
