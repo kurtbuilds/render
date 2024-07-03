@@ -25,5 +25,5 @@ serde_json = "1.0.72"
 slice-group-by = "0.3.0"
 tabular2 = "1.0.0"
 tokio = { version = "1.17.0", features = ["full"] }
-render-api = "1.1.1"
+render-api = "1.1.0"
 env2 = "0.3.0"
