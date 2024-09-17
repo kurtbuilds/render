@@ -4,7 +4,8 @@ use serde::{Serialize, Deserialize};
 pub struct Service {
     #[serde(rename = "autoDeploy")]
     pub auto_deploy: String,
-    pub branch: String,
+    #[serde(default)]
+    pub branch: Option<String>,
     #[serde(rename = "createdAt")]
     pub created_at: String,
     pub id: String,
