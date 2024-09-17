@@ -1,7 +1,7 @@
 [package]
 name = "render-api"
 edition = "2021"
-version = "1.1.1"
+version = "1.1.2"
 description = "Render client, generated from the OpenAPI spec."
 homepage = "https://github.com/libninjacom/render-rs"
 documentation = "https://docs.rs/render-api"
