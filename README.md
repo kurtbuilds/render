@@ -17,6 +17,8 @@
 
 </p>
 
+This repository also contains a Render command line tool, in the `cli` directory. You can install it with `cargo install render_cli`.
+
 Render client, generated from the OpenAPI spec.
 
 # Usage
@@ -51,16 +53,12 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-render_api = "0.1.0"
+render_api = ".."
 ```
-
 
 # Documentation
 
-
-
 * [Client Library Documentation](https://docs.rs/render-api)
-
 
 You can see working examples of every API call in the `examples/` directory.
 

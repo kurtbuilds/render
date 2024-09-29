@@ -1,5 +1,5 @@
 [package]
-name = "render-api"
+name = "render_api"
 edition = "2021"
 version = "1.1.2"
 description = "Render client, generated from the OpenAPI spec."
@@ -10,7 +10,7 @@ license = "MIT"
 repository = "https://github.com/libninjacom/render-rs"
 
 [workspace]
-members = []
+members = ["cli"]
 
 [dependencies]
 futures = "0.3.25"
@@ -25,14 +25,7 @@ default-features = false
 [dependencies.serde]
 version = "1.0.137"
 features = ["derive"]
+
 [dev-dependencies.tokio]
 version = "1.18.2"
 features = ["full"]
-
-[lib]
-path = "src/lib.rs"
-name = "render_api"
-doctest = false
-edition = "2021"
-crate-type = ["rlib"]
-required-features = []
