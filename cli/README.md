@@ -53,5 +53,5 @@ I recommend against adding secrets to `~/.bash_profile`. Instead, store it in `~
 
 # Installation
 
-    cargo install render-cli
+    cargo install render_cli
 

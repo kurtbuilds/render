@@ -10,6 +10,7 @@ pub struct TriggerDeployRequest<'a> {
     pub(crate) http_client: &'a RenderClient,
     pub clear_cache: Option<String>,
     pub service_id: String,
+    pub image_url: Option<String>,
 }
 impl<'a> TriggerDeployRequest<'a> {
     pub async fn send(self) -> ::httpclient::InMemoryResult<Deploy> {
@@ -21,6 +22,9 @@ impl<'a> TriggerDeployRequest<'a> {
             );
         if let Some(ref unwrapped) = self.clear_cache {
             r = r.json(json!({ "clearCache" : unwrapped }));
+        }
+        if let Some(ref unwrapped) = self.image_url {
+            r = r.json(json!({ "imageUrl" : unwrapped }));
         }
         r = self.http_client.authenticate(r);
         let res = r.await?;

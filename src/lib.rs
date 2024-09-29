@@ -256,6 +256,7 @@ impl RenderClient {
             http_client: &self,
             clear_cache: None,
             service_id: service_id.to_owned(),
+            image_url: None,
         }
     }
     /**Retrieve deploy
