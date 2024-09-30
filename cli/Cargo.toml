@@ -3,7 +3,7 @@ name = "render_cli"
 authors = ["Kurt Wolf <kurtwolfbuilds@gmail.com>"]
 description = "Command line actions for Render.com"
 license = "MIT"
-version = "0.10.4"
+version = "0.11.0"
 edition = "2021"
 
 [[bin]]
@@ -12,18 +12,18 @@ path = "src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.51"
-chrono = { version = "0.4.19", features = ["serde"] }
-clap = { version = "4.1.6", features = ["derive", "env"] }
-colored = "2.0.0"
-futures = "0.3.21"
+anyhow = "1.0.89"
+chrono = { version = "0.4.38", features = ["serde"] }
+clap = { version = "4.5.18", features = ["derive", "env"] }
+colored = "2.1.0"
+futures = "0.3.30"
 http = "1.1.0"
-httpclient = "0.23.9"
+httpclient = "0.23.14"
 relativetime = { version = "0.1.4", features = ["chrono"] }
-serde = { version = "1.0.130", features = ["derive"] }
-serde_json = "1.0.72"
-slice-group-by = "0.3.0"
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
+slice-group-by = "0.3.1"
 tabular2 = "1.0.0"
-tokio = { version = "1.17.0", features = ["full"] }
+tokio = { version = "1.40.0", features = ["full"] }
 render_api = { path = ".." }
-env2 = "0.3.0"
+env2 = "0.3.2"

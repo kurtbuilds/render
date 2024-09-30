@@ -1,4 +1,6 @@
+use std::thread::sleep;
 use anyhow::Result;
+use render_api::model::Status;
 use crate::{Cli};
 use crate::command::util;
 use crate::ext::ServiceCursorExt;
@@ -7,7 +9,7 @@ use crate::ext::ServiceCursorExt;
 pub struct Deploy {
     service: String,
 
-    #[clap(short='t', long)]
+    #[clap(short = 't', long)]
     image_tag: Option<String>,
 }
 
@@ -29,7 +31,33 @@ impl Deploy {
             deploy.image_url = Some(t);
         }
         let deploy = runtime.block_on(deploy.send())?;
-        println!("Watch deploy at {}", service.service.deploy_url(&deploy.id));
+        eprintln!("Watch deploy at {}", service.service.deploy_url(&deploy.id));
+        Ok(())
+    }
+}
+
+#[derive(clap::Parser, Debug)]
+pub struct Wait {
+    pub service: String,
+}
+
+impl Wait {
+    pub fn run(&self, cli: &Cli) -> Result<()> {
+        let runtime = util::runtime();
+        let client = cli.build_client();
+        let services = runtime.block_on(client.list_services().send())?;
+        let service = services.iter().find(|s| s.service.name == self.service).expect("No service matching that name found.");
+        loop {
+            let deploys = runtime.block_on(client.list_deploys(&service.service.id).limit(1).send())?;
+            let deploy = deploys.first().unwrap();
+            if deploy.status == Status::Live {
+                break;
+            }
+            sleep(std::time::Duration::from_millis(500));
+            if matches!(deploy.status, Status::BuildFailed | Status::Canceled | Status::PreDeployFailed) {
+                panic!("Deploy failed.");
+            }
+        }
         Ok(())
     }
 }

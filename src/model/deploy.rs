@@ -1,6 +1,22 @@
-
 use serde::{Serialize, Deserialize};
 use super::Commit;
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum Status {
+    Created,
+    BuildInProgress,
+    UpdateInProgress,
+    Live,
+    Deactivated,
+    BuildFailed,
+    UpdateFailed,
+    Canceled,
+    PreDeployInProgress,
+    PreDeployFailed,
+
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Deploy {
@@ -10,7 +26,7 @@ pub struct Deploy {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub finished_at: Option<chrono::DateTime<chrono::Utc>>,
     pub id: String,
-    pub status: String,
+    pub status: Status,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 impl std::fmt::Display for Deploy {

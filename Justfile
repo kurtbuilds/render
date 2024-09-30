@@ -15,7 +15,7 @@ release:
     cargo build --release
 
 install:
-    cargo install --path .
+    cargo install --path . --locked
 
 bootstrap:
     cargo install cargo-edit

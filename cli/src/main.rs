@@ -58,6 +58,8 @@ enum Command {
     PutEnv(PutEnv),
     /// Deploy a service
     Deploy(Deploy),
+    /// Deploy a service
+    Wait(Wait),
     /// Suspend a service
     Suspend(Suspend),
     /// List env groups
@@ -80,7 +82,7 @@ fn main() -> Result<()> {
         Command::Suspend(s) => s.run(&args),
         Command::ListEnvGroups(l) => l.run(&args),
         Command::GetEnv(g) => g.run(&args),
-        // Command::CreateEnvGroup(c) => c.run(&args),
         Command::Teams(t) => t.run(&args),
+        Command::Wait(w) => w.run(&args),
     }
 }

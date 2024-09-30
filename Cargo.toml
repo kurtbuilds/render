@@ -13,19 +13,19 @@ repository = "https://github.com/libninjacom/render-rs"
 members = ["cli"]
 
 [dependencies]
-futures = "0.3.25"
-httpclient = "0.23.9"
-serde_json = "1.0.81"
+futures = "0.3.30"
+httpclient = "0.23.14"
+serde_json = "1.0.128"
 
 [dependencies.chrono]
-version = "0.4.23"
+version = "0.4.38"
 features = ["serde"]
 default-features = false
 
 [dependencies.serde]
-version = "1.0.137"
+version = "1.0.210"
 features = ["derive"]
 
 [dev-dependencies.tokio]
-version = "1.18.2"
+version = "1.40.0"
 features = ["full"]

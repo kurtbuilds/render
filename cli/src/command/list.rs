@@ -8,10 +8,11 @@ use crate::command::util::runtime;
 use crate::ext::ServiceCursorExt;
 
 pub fn service_status<'a>(service: &'a Service, deploy: &'a Deploy) -> Cow<'a, str> {
+    let status = serde_json::to_string(&deploy.status).unwrap();
     if service.suspended == "suspended" {
         return "SUSPENDED".dimmed().to_string().into();
     }
-    match deploy.status.as_ref() {
+    match status.as_str() {
         "live" => Cow::Owned("LIVE".green().to_string()),
         "build_failed" => Cow::Owned("BUILD FAILED".red().to_string()),
         "update_failed" => Cow::Owned("UPDATE FAILED".red().to_string()),
@@ -19,7 +20,7 @@ pub fn service_status<'a>(service: &'a Service, deploy: &'a Deploy) -> Cow<'a, s
         "build_in_progress" => Cow::Owned("BUILDING".yellow().to_string()),
         "deactivated" => Cow::Owned("DEACTIVATED".dimmed().to_string()),
         "canceled" => Cow::Owned("CANCELED".dimmed().to_string()),
-        s => Cow::Borrowed(s),
+        _ => Cow::Owned(status),
     }
 }
 
